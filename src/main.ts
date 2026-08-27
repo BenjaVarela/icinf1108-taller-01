@@ -1,40 +1,45 @@
 import { AppModule } from "@/app.module";
-
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
+import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule);
 
-	app.enableCors({
-		origin: "*",
-	});
+    app.enableCors({
+        origin: "*",
+    });
 
-	app.useGlobalPipes(
-		new ValidationPipe({
-			whitelist: true,
-			forbidNonWhitelisted: true,
-			transform: true,
-		}),
-	);
+    // Global Interceptor and Exception Filter for API response standardization
+    app.useGlobalInterceptors(new ResponseInterceptor());
+    app.useGlobalFilters(new AllExceptionsFilter());
 
-	const config = new DocumentBuilder()
-		.setTitle("NestJS CRUD Students & Pets")
-		.setDescription(
-			"API de un CRUD en memoria para la entidad Student y sus mascotas (Pet)",
-		)
-		.setVersion("1.0")
-		.build();
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: true,
+            transform: true,
+        }),
+    );
 
-	const document = SwaggerModule.createDocument(app, config);
+    const config = new DocumentBuilder()
+        .setTitle("NestJS CRUD Students & Pets")
+        .setDescription(
+            "In-memory CRUD API for Student entity and their Pets",
+        )
+        .setVersion("1.0")
+        .build();
 
-	SwaggerModule.setup("docs", app, document);
+    const document = SwaggerModule.createDocument(app, config);
 
-	await app.listen(3000, "0.0.0.0");
+    SwaggerModule.setup("docs", app, document);
 
-	console.log("Application running on: http://localhost:3000");
-	console.log("Documentation at: http://localhost:3000/docs");
+    await app.listen(3000, "0.0.0.0");
+
+    console.log("Application running on: http://localhost:3000");
+    console.log("Documentation at: http://localhost:3000/docs");
 }
 
 bootstrap();
