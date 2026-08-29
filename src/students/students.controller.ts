@@ -6,6 +6,7 @@ import {
 	Param,
 	Patch,
 	Post,
+	NotFoundException,
 } from "@nestjs/common";
 
 import { StudentsService } from "@/students/students.service";
@@ -26,9 +27,12 @@ export class StudentsController {
 
 	@Get(":id")
 	public findById(@Param("id") id: string) {
-		return this.studentsService.findById(id);
+	    const student = this.studentsService.findById(id);
+		if (!student) {
+			throw new NotFoundException(`Student with ID ${id} not found`);
+		}
+        return student;
 	}
-
 	@Post()
 	public create(@Body() body: CreateStudentDto) {
 		return this.studentsService.create(body);
