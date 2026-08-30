@@ -1,68 +1,62 @@
-# CRUD Students
+# Taller de Desarrollo Backend - API Estándar (NestJS)
 
-Proyecto NestJS que implementa un **CRUD en memoria** para la entidad `Student`. No requiere base de datos ni contenedores: los datos viven en un `Map` dentro del servicio y se pierden al reiniciar la aplicación.
+Proyecto backend desarrollado con **NestJS** enfocado en el módulo de **Students**, el cual implementa un estándar unificado de respuestas HTTP y manejo global de excepciones.
 
-## Requerimientos
+## Integrantes del Equipo
+* Benjamín Varela (Líder / Integración / Documentación)
+* Mauricio (Endpoints GET: Listar)
+* Diego (Endpoint POST: Creación y GET por ID)
+* Benja Riquelme (Endpoints PATCH y DELETE)
 
-- Node.js 20+ (probado con Node 24)
-- pnpm
+---
 
-## Resumen funcional
+## Estándar de Respuesta de la API
 
-La API expone operaciones CRUD completas sobre estudiantes bajo `/api/students`:
+Todas las respuestas de la API (tanto éxitos como errores) siguen estrictamente un formato JSON unificado de 6 campos para garantizar consistencia en el frontend:
 
-- **Crear**: `POST /api/students`
-- **Listar**: `GET /api/students`
-- **Buscar por id**: `GET /api/students/:id`
-- **Actualizar**: `PATCH /api/students/:id`
-- **Eliminar**: `DELETE /api/students/:id`
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Operación exitosa",
+  "data": { ... },
+  "errors": null,
+  "timestamp": "2026-08-30T18:00:00.000Z"
+}
 
-Cada estudiante tiene `id` (UUID), `name`, `email`, `age`, `createdAt` y `updatedAt`. El `email` es único: se rechaza con `409 Conflict` si ya existe.
+### Descripción de los Campos
+* **`success`**: Booleano que indica si la solicitud fue exitosa (`true`) o fallida (`false`).
+* **`statusCode`**: Código de estado HTTP correspondiente (ej. `200`, `201`, `400`, `404`, etc.).
+* **`message`**: Mensaje descriptivo sobre el resultado de la petición.
+* **`data`**: Contiene la información devuelta por el servidor (en caso de éxito) o `null` (en caso de error).
+* **`errors`**: Contiene los detalles o arreglos de errores en caso de fallo, o `null` si no hay errores.
+* **`timestamp`**: Fecha y hora exacta de la respuesta en formato ISO 8601.
 
-La validación de entrada se realiza con `class-validator` a través de un `ValidationPipe` global:
+## Endpoints del Módulo Students
 
-- `name`: texto de 3 a 100 caracteres, sin etiquetas HTML.
-- `email`: dirección de correo electrónico válida.
-- `age`: entero entre 18 y 99.
+La API expone los siguientes endpoints bajo el prefijo `/api/students`:
 
-## Contexto técnico
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| **GET** | `/api/students` | Retorna la lista completa de todos los estudiantes registrados. |
+| **GET** | `/api/students/:id` | Retorna los detalles de un estudiante específico según su ID. |
+| **POST** | `/api/students` | Crea y registra un nuevo estudiante en el sistema. |
+| **PATCH** | `/api/students/:id` | Actualiza parcialmente la información de un estudiante existente. |
+| **DELETE** | `/api/students/:id` | Elimina un estudiante y sus dependencias asociadas del sistema. |
 
-- **Backend**: NestJS
-- **Almacenamiento**: en memoria (sin persistencia)
-- **Validación**: `class-validator` + `class-transformer`
-- **Documentación**: Swagger en `/docs`
+---
 
-## Ejecución local
+## Arquitectura e Infraestructura Implementada
 
-1. Instalar dependencias:
+* **`ApiResponse<T>` DTO**: Estructura tipada genérica para envolver las respuestas de los controladores.
+* **`ResponseInterceptor`**: Interceptor global encargado de interceptar todas las respuestas exitosas de los controladores y darles automáticamente la forma estándar.
+* **`AllExceptionsFilter`**: Filtro global de excepciones que captura cualquier error o excepción lanzada por NestJS y la transforma al formato de 6 campos con `success: false`.
 
+---
+
+## Guía de Instalación y Ejecución Local
+
+1. Clonar el repositorio y acceder a la carpeta del proyecto.
+2. Instalar las dependencias del proyecto:
    ```bash
    pnpm install
-   ```
-
-2. Levantar el servidor en modo desarrollo:
-
-   ```bash
-   pnpm run start:dev
-   ```
-
-   O usando Make:
-
-   ```bash
-   make install
-   make dev
-   ```
-
-La aplicación queda disponible en:
-
-- `http://localhost:3000`
-- `http://localhost:3000/docs`
-
-## Comandos útiles
-
-- `make dev` — arranca NestJS en modo watch
-- `make build` — compila el proyecto
-- `make lint` — ejecuta ESLint
-- `make format` — formatea el código
-- `make format-check` — verifica el formato
-- `make clean` — elimina `dist`, `coverage` y `node_modules`
