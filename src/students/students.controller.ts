@@ -19,9 +19,9 @@ export class StudentsController {
 		private readonly studentsService: StudentsService,
 		private readonly petsService: PetsService,
 	) {}
-
+	
 	@Get()
-	public findAll() {
+	public findAll(): import("./students.entity").Student[] {
 		return this.studentsService.findAll();
 	}
 
