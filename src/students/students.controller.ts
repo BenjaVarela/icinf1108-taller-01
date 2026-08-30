@@ -39,14 +39,14 @@ export class StudentsController {
 	}
 
 	@Patch(":id")
-	public update(@Param("id") id: string, @Body() body: UpdateStudentDto) {
-		return this.studentsService.update(id, body);
-	}
+public async update(@Param("id") id: string, @Body() body: UpdateStudentDto) {
+    return await this.studentsService.update(id, body);
+}
 
-	@Delete(":id")
-	public delete(@Param("id") id: string) {
-		const deleted = this.studentsService.delete(id);
-		this.petsService.deleteAllForStudent(id);
-		return deleted;
+@Delete(":id")
+public async delete(@Param("id") id: string) {
+    await this.petsService.deleteAllForStudent(id); // Primero borramos las dependencias
+    const deleted = await this.studentsService.delete(id); // Luego eliminamos al estudiante
+    return deleted;
 	}
 }
